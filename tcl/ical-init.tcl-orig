@@ -1,0 +1,46 @@
+# 
+
+ad_library {
+    
+    setup ical filters
+    
+    @author gustaf.neumann@wu-wien.ac.atg
+    @creation-date 2005-07-20
+    @cvs-id $Id$
+    
+}
+
+#set prefix [parameter::get \
+		-package_id [apm_package_id_from_key "oacs-dav"] \
+		-parameter "WebDAVURLPrefix" \
+		-default "/dav"]
+set prefix /ical
+
+set url "${prefix}/*"
+set filter_url "${prefix}*"
+
+ns_register_filter preauth GET ${filter_url}       calendar::ical::dav
+ns_register_filter preauth HEAD ${filter_url}      calendar::ical::dav
+ns_register_filter preauth PUT ${filter_url}       calendar::ical::dav
+ns_register_filter preauth MKCOL ${filter_url}     calendar::ical::dav
+ns_register_filter preauth COPY ${filter_url}      calendar::ical::dav
+ns_register_filter preauth MOVE ${filter_url}      calendar::ical::dav
+ns_register_filter preauth PROPFIND ${filter_url}  calendar::ical::dav
+ns_register_filter preauth PROPPATCH ${filter_url} calendar::ical::dav
+ns_register_filter preauth DELETE ${filter_url}    calendar::ical::dav
+ns_register_filter preauth LOCK ${filter_url}      calendar::ical::dav
+ns_register_filter preauth UNLOCK ${filter_url}    calendar::ical::dav
+
+ns_log notice "ical_dav: preauth filters loaded on $filter_url"
+
+ns_register_proc GET ${url}       calendar::ical::dav handle_request
+ns_register_proc HEAD ${url}      calendar::ical::dav handle_request
+ns_register_proc COPY ${url}      calendar::ical::dav handle_request
+ns_register_proc PUT ${url}       calendar::ical::dav handle_request
+ns_register_proc DELETE ${url}    calendar::ical::dav handle_request
+ns_register_proc PROPFIND ${url}  calendar::ical::dav handle_request
+ns_register_proc PROPPATCH ${url} calendar::ical::dav handle_request
+ns_register_proc MKCOL ${url}     calendar::ical::dav handle_request
+ns_register_proc MOVE ${url}      calendar::ical::dav handle_request
+ns_register_proc LOCK ${url}      calendar::ical::dav handle_request
+ns_register_proc UNLOCK ${url}    calendar::ical::dav handle_request

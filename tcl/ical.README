@@ -1,0 +1,60 @@
+Here is a list of the most important CHANGES in the tar file.
+
+ * Calendars can be exported into and imported from the ical format;
+   this means that one can import an calendar from e.g. mozilla
+   calendar into openacs and export calendars from openacs into
+   mozilla calendar. it is also possible to share calendars via
+   openacs via mozilla calendar and webdav, such that changes to a
+   calendar within mozilla calendar are immediately propagated to
+   openacs (without performing explicit export and import commands). 
+
+   As a byproduct this facility can also be used to export calendar 
+   items from one openacs installation and import it into another one.
+
+ * Webdav support for ical (can be used very nicely from mozilla
+   (thunderbird/firefox/sunbird, up to a certain degree from Apples iCal)
+
+ * Added upload and download items to the calendar admin page
+
+ * An activity is now deleted, whenever the last cal-item is deleted.
+   otherwise, there would be a problem, if activities are created
+   repeatately via ::calendar::item::new.
+
+   The changes are in calendar::item::delete and
+   calendar::item::delete_recurrence in cal-item-procs.tcl
+
+   The approach is rather crude, it would be certainly more elegant to
+   use a "delete cascade" from the fk in acs_events to acs_activities.
+
+   This addresses as well the message in 
+       http://openacs.org/forums/message-view?message_id=243076
+
+ * A community can have now multiple calendars; these multiple
+   calendars are presented on the portal pages. Previously different
+   calendar items where shown, when calendars were viewed from a
+   portal page or from the mounted package. Now, calendar items of all
+   (appropriate) calendars of the package are presented from the
+   portal page and on from the mounted package in an community
+
+ * Added table for associating arbitry (external) Unique IDs and other ical data
+   to activities. To be less intrusive, i added a table named 
+      cal_uids(cal_uid, on_which_activity)
+   most probably, the field UID should be moved into acs_activities
+    
+ * update sql script + indices for signifcant faster view operations
+   (our production system has over 19000 calendars).
+
+ * fix for double fetching of items: previously, there was a 
+   on_click action on table cells (e.g. in the mini-calendar).
+   These table cells contain links. When someone clicks 
+   on a day in the mini-calendar, both the action handler and 
+   the link were activated, causing a double fetch. The same problem
+   occured in the mini-calendar and on the month view of the
+   calendar.
+
+ * dotlrn.css contained for all portal elements a vertical center
+   spec. at least for the calendar, this leads to a bad display.
+   i have removed this entry.
+    
+-gustaf neumann
+  

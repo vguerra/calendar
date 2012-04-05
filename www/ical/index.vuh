@@ -1,0 +1,105 @@
+ad_page_contract {
+    Output calendar items in ical format (outlook compatible)
+    The expected URL is <cal_item_id>.ics
+
+    @author Ben Adida (ben@openforce)
+    @author Gustaf Neumann (neumann@wu-wien.ac.at)
+
+    @creation-date June 20, 2002
+    @cvs-id $Id$
+} {
+  {with_recurrences_p 0}
+  {cal_item_id:optional}
+  {package_id:optional}
+  {calendar_id_list:optional}
+  {user_id:optional}
+  {cal_name:optional}
+  {period_days 30}
+  {cal_item_type_id ""}
+  {plain 0}
+}
+
+if {![info exists cal_item_id] && 
+    ![info exists package_id] &&
+    ![info exists calendar_id_list]
+} {
+  set path [ad_conn path_info]
+  # Get the cal_item_id from the path
+  if {![regexp {([0-9]+)\.ics} $path all cal_item_id]} {
+    ad_returnredirect "../"
+    ad_script_abort
+  }
+}
+
+if {![info exists cal_name]} {
+  set cal_name [ns_info server]
+}
+
+if {[info exists cal_item_id]} {
+  #
+  # return a single calendar item in ical format
+  #
+  ad_require_permission $cal_item_id read 
+  set ics [::calendar::ical format_item \
+	       -cal_item_id $cal_item_id \
+	       -with_recurrences_p $with_recurrences_p]
+  if {$plain} {
+     ns_return 200 text/plain $ics
+  } else {
+     ns_return 200 application/x-msoutlook $ics
+  }
+  ad_script_abort
+
+} elseif {[info exists calendar_id_list]} {
+  #
+  # return the calendar items for the given calendar IDs (might be "all")
+  #
+
+  if {$calendar_id_list eq "all"} {
+    set portal_id [dotlrn::get_portal_id -user_id $user_id]
+    set portal_key calendar_id
+    set calendar_id_list \
+	[db_list [::calendar::ical sql select_portal_parameter] {}]
+    }
+  }
+  
+  foreach advar {package_id user_id} {
+    if {![info exists $advar]} {
+      set $advar [ad_conn $advar]
+    }
+  }
+
+  set ics [::calendar::ical format_calendar \
+	       -with_recurrences_p $with_recurrences_p \
+	       -cal_name $cal_name \
+	       -package_id $package_id \
+	       -user_id $user_id \
+	       -calendar_id_list $calendar_id_list \
+	       -item_type_id $cal_item_type_id \
+	       -period_days $period_days]
+  #ns_return 200 application/x-msoutlook $ics
+  ns_return 200 text/calendar $ics
+  ad_script_abort
+
+} else {
+  #
+  # return all calendar items for a single calendar 
+  # determined by the given package id
+  #
+  foreach advar {package_id user_id} {
+    if {![info exists $advar]} {
+      set $advar [ad_conn $advar]
+    }
+  }
+
+  set ics [::calendar::ical format_calendar \
+	       -with_recurrences_p $with_recurrences_p \
+	       -cal_name $cal_name \
+	       -package_id $package_id \
+	       -user_id $user_id \
+	       -item_type_id $cal_item_type_id \
+	       -period_days $period_days]
+  #ns_return 200 application/x-msoutlook $ics
+  ns_return 200 text/calendar $ics
+}
+
